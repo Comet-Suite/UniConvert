@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=UniConvert
+GenericName=File Converter
+Comment=Universal multi-format file converter
+Exec=uniconvert
+Icon=uniconvert
+Categories=Utility;AudioVideo;Graphics;Office;
+Keywords=convert;audio;video;image;document;converter;
+StartupNotify=true
