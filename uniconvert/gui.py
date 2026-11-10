@@ -17,6 +17,7 @@ from PyQt6.QtWidgets import (
 from . import __app_name__, __version__
 from .converter import ConversionJob, convert, ConversionError
 from .formats import get_registry, categorise
+from . import updater
 
 ASSETS_DIR = Path(__file__).resolve().parent.parent / "assets"
 
@@ -118,6 +119,7 @@ class MainWindow(QMainWindow):
         self._build_ui()
         self._build_tray(icon)
         self._apply_startup_setting()
+        self._background_update_check()
 
     # ---------- Menu bar ----------
     def _build_menu(self) -> None:
@@ -138,7 +140,10 @@ class MainWindow(QMainWindow):
         opts_menu.addAction(self.startup_act)
 
         help_menu = mb.addMenu("&Help")
+        update_act = QAction("&Check for updates…", self, triggered=self._check_updates)
         about_act = QAction(f"&About {__app_name__}", self, triggered=self._show_about)
+        help_menu.addAction(update_act)
+        help_menu.addSeparator()
         help_menu.addAction(about_act)
 
     def _show_about(self) -> None:
@@ -158,6 +163,17 @@ class MainWindow(QMainWindow):
         if not icon.isNull():
             box.setIconPixmap(icon.pixmap(64, 64))
         box.exec()
+
+    # ---------- Updater ----------
+    def _check_updates(self, silent_if_current: bool = False) -> None:
+        latest = updater.check_and_prompt(parent=self, silent_if_current=silent_if_current)
+        if latest is not None:
+            updater.download_and_install(latest)
+
+    def _background_update_check(self) -> None:
+        """Check for updates once 3 seconds after startup — non-blocking."""
+        from PyQt6.QtCore import QTimer
+        QTimer.singleShot(3000, lambda: self._check_updates(silent_if_current=True))
 
     # ---------- Autostart helpers ----------
     def _autostart_path(self) -> Optional[Path]:
@@ -296,11 +312,12 @@ class MainWindow(QMainWindow):
         self.setStatusBar(self._status_bar)
         self._status_bar.showMessage("Ready. Drop files to begin.")
 
+        # Populate format dropdown for the initially-selected category
+        self._on_category_changed(0)
+
     @property
     def status(self):
         return self._status_bar
-
-        self._on_category_changed(0)
 
     def _build_tray(self, icon: QIcon) -> None:
         if not QSystemTrayIcon.isSystemTrayAvailable():

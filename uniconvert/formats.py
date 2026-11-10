@@ -22,9 +22,10 @@ DOC_EXTS = {"pdf", "docx", "doc", "odt", "rtf", "txt", "html", "md", "xlsx", "xl
             "ods", "csv", "pptx", "ppt", "odp", "key", "xml", "json", "yaml", "yml"}
 EBOOK_EXTS = {"epub", "mobi", "azw3"}
 ARCHIVE_EXTS = {"zip", "rar", "7z", "tar", "gz", "bz2", "iso"}
-CODE_EXTS = {"py", "js", "java", "cpp", "cc", "cxx", "cs", "go", "rs", "rb", "php",
-             "ts", "swift", "kt", "scala", "pl", "lua", "r", "m", "sql", "sh",
-             "ps1", "html", "json", "xml", "yaml", "yml"}
+CODE_EXTS = {"py", "js", "java", "cpp", "cc", "cxx", "c", "h", "hpp", "go", "rs", "rb",
+             "php", "ts", "swift", "kt", "scala", "pl", "lua", "r", "m", "sql", "sh",
+             "ps1", "html", "css", "json", "xml", "yaml", "yml", "md", "toml", "ini",
+             "cfg", "bat", "cmd"}
 
 
 def categorise(ext: str) -> str:
@@ -62,6 +63,9 @@ class FormatRegistry:
         }
         self._load()
 
+    # Extensions in the CSV that are labels (not real file extensions) — skip them
+    _SKIP = {"c++", "c#"}
+
     def _load(self) -> None:
         with FORMATS_CSV.open(newline="", encoding="utf-8") as fh:
             reader = csv.DictReader(fh)
@@ -69,6 +73,8 @@ class FormatRegistry:
                 src = row["From"].strip().lower()
                 dst = row["To"].strip().lower()
                 if not src or not dst:
+                    continue
+                if src in self._SKIP or dst in self._SKIP:
                     continue
                 self.pairs.append((src, dst))
                 cat = categorise(src)

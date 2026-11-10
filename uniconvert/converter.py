@@ -301,28 +301,38 @@ def _convert_data(job: ConversionJob, progress: Optional[ProgressCb]) -> None:
         return
     if fmt in {"xlsx", "xls"} or src_ext in {"xlsx", "xls"}:
         try:
-            import pandas as pd
-        except ImportError as e:
-            raise ConversionError("pandas + openpyxl are required for Excel conversions.") from e
-        if src_ext == "csv":
-            df = pd.read_csv(src)
-        elif src_ext == "json":
-            df = pd.read_json(src)
-        elif src_ext in {"xlsx", "xls"}:
-            df = pd.read_excel(src)
-        else:
-            raise ConversionError(f"Cannot read {src_ext} for Excel conversion.")
-        if fmt == "csv":
-            df.to_csv(dst, index=False)
-        elif fmt == "json":
-            df.to_json(dst, orient="records", indent=2)
-        elif fmt == "xlsx":
-            df.to_excel(dst, index=False)
-        else:
-            raise ConversionError(f"Unsupported data target: {fmt}")
-        if progress:
-            progress(1.0, "Done")
-        return
+            import pandas as pd  # type: ignore
+        except ImportError:
+            pd = None
+        if pd is not None:
+            try:
+                if src_ext == "csv":
+                    df = pd.read_csv(src)
+                elif src_ext == "json":
+                    df = pd.read_json(src)
+                elif src_ext in {"xlsx", "xls"}:
+                    df = pd.read_excel(src)
+                else:
+                    raise ConversionError(f"Cannot read {src_ext} for Excel conversion.")
+                if fmt == "csv":
+                    df.to_csv(dst, index=False)
+                elif fmt == "json":
+                    df.to_json(dst, orient="records", indent=2)
+                elif fmt == "xlsx":
+                    df.to_excel(dst, index=False)
+                else:
+                    raise ConversionError(f"Unsupported data target: {fmt}")
+                if progress:
+                    progress(1.0, "Done")
+                return
+            except Exception as e:
+                raise ConversionError(f"Excel conversion failed: {e}") from e
+        # If pandas unavailable: tell user how to enable it
+        raise ConversionError(
+            "Excel (.xlsx/.xls) conversions require the optional pandas + openpyxl packages.\n"
+            "Install them with:  pip install pandas openpyxl\n"
+            "(Other data formats — CSV/JSON/YAML/XML/HTML — work without pandas.)"
+        )
     # HTML conversions for data
     pandoc = _which("pandoc")
     if pandoc and fmt in {"html", "pdf", "docx"}:

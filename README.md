@@ -1,29 +1,29 @@
 <div align="center">
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/logo.png">
-  <img alt="UniConvert" src="assets/logo.png" width="140" height="140">
-</picture>
+<img alt="UniConvert" src="assets/logo.png" width="120" height="120">
 
 # UniConvert
 
 **The universal file converter for Windows, macOS & Linux**
 
-Drag files in · pick a format · click Convert. **300+ format pairs** — audio, video, images, documents, e‑books, archives, spreadsheets, and code — all in a single, clean, offline desktop app.
+Drag files in · pick a format · click Convert. **300+ format pairs** across audio, video, images, documents, e‑books, archives, spreadsheets, and code — in one clean, offline desktop app.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Platforms](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](#install)
-[![Python 3.9+](https://img.shields.io/badge/python-3.9+-yellow.svg)](https://python.org)
 [![Release](https://img.shields.io/github/v/release/Comet-Suite/UniConvert?color=brightgreen)](https://github.com/Comet-Suite/UniConvert/releases/latest)
-[![Tests](https://github.com/Comet-Suite/UniConvert/actions/workflows/test.yml/badge.svg)](https://github.com/Comet-Suite/UniConvert/actions/workflows/test.yml)
 [![Downloads](https://img.shields.io/github/downloads/Comet-Suite/UniConvert/total?color=orange)](https://github.com/Comet-Suite/UniConvert/releases)
 
-[⬇ Download latest release](https://github.com/Comet-Suite/UniConvert/releases/latest) ·
+[⬇ Download](https://github.com/Comet-Suite/UniConvert/releases/latest) ·
 [📦 Install](#install) ·
 [🚀 Quick start](#quick-start) ·
-[🧰 Build from source](#build-from-source) ·
 [🧪 CLI](#command-line-interface) ·
 [🤝 Contribute](#contributing)
+
+<br/>
+
+<img alt="UniConvert main window" src="screenshots/01_main_with_files.png" width="720">
+
+<br/><i>Drag, drop, convert.</i>
 
 </div>
 
@@ -115,7 +115,17 @@ sudo dpkg -i uniconvert_0.1.0_amd64.deb
 5. Click **Convert**. Watch per‑file progress, cancel any time.
 6. Files that don't support the selected format are skipped automatically.
 
-![demo](assets/logo.png)
+---
+
+## 📸 Screenshots
+
+<div align="center">
+  <img alt="Main window" src="screenshots/01_main_with_files.png" width="700"><br/>
+  <sub><i>Main window — files loaded, category picked, ready to convert.</i></sub>
+  <br/><br/>
+  <img alt="About dialog" src="screenshots/02_about.png" width="420"><br/>
+  <sub><i>About dialog with version & platform info.</i></sub>
+</div>
 
 ---
 
