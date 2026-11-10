@@ -3,39 +3,12 @@
   <id>app.uniconvert.UniConvert</id>
   <name>UniConvert</name>
   <summary>Universal multi-format file converter</summary>
-  <description>
-    <p>Convert between hundreds of audio, video, image, document, e-book,
-      archive, and data formats with a drag-and-drop interface.</p>
-    <p>Features include batch conversion, live progress, system tray
-      integration, cancel-in-progress, and right-click shell integration on
-      Windows and GNOME/Linux.</p>
-  </description>
   <launchable type="desktop-id">uniconvert.desktop</launchable>
   <url type="homepage">https://github.com/Comet-Suite/UniConvert</url>
   <developer_name>UniConvert Contributors</developer_name>
   <project_license>MIT</project_license>
-  <categories>
-    <category>Utility</category>
-    <category>AudioVideo</category>
-    <category>Graphics</category>
-    <category>Office</category>
-  </categories>
+  <categories><category>Utility</category><category>AudioVideo</category><category>Graphics</category><category>Office</category></categories>
   <provides><binary>uniconvert</binary></provides>
-  <releases>
-    <release version="0.1.0" date="2026-11-10">
-      <description>
-        <p>Initial public release.</p>
-        <ul>
-          <li>Drag-and-drop batch UI with live progress</li>
-          <li>300+ format pairs across audio, video, image, document, archive, e-book, and data</li>
-          <li>System tray integration</li>
-          <li>Windows installer with Explorer right-click menu</li>
-          <li>Linux .deb package with Nautilus extension</li>
-          <li>macOS .app bundle</li>
-          <li>Headless CLI</li>
-        </ul>
-      </description>
-    </release>
-  </releases>
+  <releases><release version="0.1.1" date="2026-11-10"/></releases>
   <content_rating type="oars-1.1"/>
 </component>

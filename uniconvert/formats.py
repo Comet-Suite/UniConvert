@@ -4,11 +4,33 @@ them into categories (audio, video, image, document, archive, data, ebook, code)
 from __future__ import annotations
 
 import csv
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, Iterable, List, Set, Tuple
 
-FORMATS_CSV = Path(__file__).resolve().parent.parent / "assets" / "formats.csv"
+
+def _bundled_formats_csv() -> Path:
+    """Find formats.csv whether running from source, from an installed location,
+    or frozen by PyInstaller (sys._MEIPASS)."""
+    # PyInstaller sets sys._MEIPASS
+    meipass = getattr(sys, "_MEIPASS", None)
+    candidates = []
+    if meipass:
+        candidates.append(Path(meipass) / "assets" / "formats.csv")
+    # When bundled as "app/"" next to the Windows launcher (embedded python layout):
+    # exe is in <app>\UniConvert.exe, assets/formats.csv is in <app>\assets\formats.csv
+    if getattr(sys, "frozen", False):
+        candidates.append(Path(sys.executable).resolve().parent / "assets" / "formats.csv")
+    # Source / pip install
+    candidates.append(Path(__file__).resolve().parent.parent / "assets" / "formats.csv")
+    for c in candidates:
+        if c.is_file():
+            return c
+    raise FileNotFoundError(f"formats.csv not found (searched: {candidates})")
+
+
+FORMATS_CSV = _bundled_formats_csv()
 
 
 AUDIO_EXTS = {"mp3", "wav", "flac", "aac", "ogg", "wma", "m4a", "aiff", "opus",
@@ -51,7 +73,6 @@ def categorise(ext: str) -> str:
 
 @dataclass
 class FormatRegistry:
-    """Holds every supported (source, target) conversion pair."""
     pairs: List[Tuple[str, str]] = field(default_factory=list)
     sources_by_category: Dict[str, Set[str]] = field(default_factory=dict)
 
@@ -63,7 +84,7 @@ class FormatRegistry:
         }
         self._load()
 
-    # Extensions in the CSV that are labels (not real file extensions) — skip them
+    # Extensions that appear in the CSV but aren't real file extensions (labels).
     _SKIP = {"c++", "c#"}
 
     def _load(self) -> None:
