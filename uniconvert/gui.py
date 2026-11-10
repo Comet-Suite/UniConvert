@@ -1,12 +1,13 @@
 """PyQt6 GUI for UniConvert."""
 from __future__ import annotations
 
+import platform
 import sys
 from pathlib import Path
 from typing import List, Optional
 
-from PyQt6.QtCore import Qt, QThread, pyqtSignal, QSize, QTimer
-from PyQt6.QtGui import QAction, QDragEnterEvent, QDropEvent, QIcon, QPixmap, QFont
+from PyQt6.QtCore import QSettings, Qt, QThread, pyqtSignal
+from PyQt6.QtGui import QAction, QDragEnterEvent, QDropEvent, QIcon, QPixmap
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
     QLabel, QListWidget, QListWidgetItem, QComboBox, QFileDialog, QProgressBar,
@@ -113,8 +114,104 @@ class MainWindow(QMainWindow):
         self.registry = get_registry()
         self.files: List[Path] = []
         self.worker: Optional[ConvertWorker] = None
+        self._build_menu()
         self._build_ui()
         self._build_tray(icon)
+        self._apply_startup_setting()
+
+    # ---------- Menu bar ----------
+    def _build_menu(self) -> None:
+        mb = self.menuBar()
+        file_menu = mb.addMenu("&File")
+        add_act = QAction("Add &files…", self, shortcut="Ctrl+O", triggered=self._browse_files)
+        clear_act = QAction("&Clear list", self, shortcut="Ctrl+L", triggered=self._clear_files)
+        quit_act = QAction("&Quit", self, shortcut="Ctrl+Q", triggered=QApplication.instance().quit)
+        file_menu.addAction(add_act)
+        file_menu.addAction(clear_act)
+        file_menu.addSeparator()
+        file_menu.addAction(quit_act)
+
+        opts_menu = mb.addMenu("&Options")
+        self.startup_act = QAction("Start at &login", self, checkable=True)
+        self.startup_act.setChecked(self._is_autostart_enabled())
+        self.startup_act.toggled.connect(self._set_autostart)
+        opts_menu.addAction(self.startup_act)
+
+        help_menu = mb.addMenu("&Help")
+        about_act = QAction(f"&About {__app_name__}", self, triggered=self._show_about)
+        help_menu.addAction(about_act)
+
+    def _show_about(self) -> None:
+        icon = load_icon()
+        text = (
+            f"<h2>{__app_name__} v{__version__}</h2>"
+            "<p>Universal multi-format file converter.</p>"
+            "<p>Convert between hundreds of audio, video, image, document, "
+            "archive, e-book, and data formats.</p>"
+            f"<p style='color:#666'>Running on Python {platform.python_version()} / "
+            f"{platform.system()} {platform.release()}</p>"
+            "<p><a href='https://github.com/Comet-Suite/UniConvert'>github.com/Comet-Suite/UniConvert</a></p>"
+        )
+        box = QMessageBox(self)
+        box.setWindowTitle(f"About {__app_name__}")
+        box.setText(text)
+        if not icon.isNull():
+            box.setIconPixmap(icon.pixmap(64, 64))
+        box.exec()
+
+    # ---------- Autostart helpers ----------
+    def _autostart_path(self) -> Optional[Path]:
+        sysname = platform.system()
+        if sysname == "Windows":
+            return Path.home() / "AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/UniConvert.lnk"
+        if sysname == "Linux":
+            return Path.home() / ".config/autostart/uniconvert.desktop"
+        if sysname == "Darwin":
+            return Path.home() / "Library/LaunchAgents/app.uniconvert.UniConvert.plist"
+        return None
+
+    def _is_autostart_enabled(self) -> bool:
+        p = self._autostart_path()
+        return bool(p and p.exists())
+
+    def _apply_startup_setting(self) -> None:
+        self.startup_act.blockSignals(True)
+        self.startup_act.setChecked(self._is_autostart_enabled())
+        self.startup_act.blockSignals(False)
+
+    def _set_autostart(self, enabled: bool) -> None:
+        p = self._autostart_path()
+        if p is None:
+            return
+        if enabled:
+            p.parent.mkdir(parents=True, exist_ok=True)
+            sysname = platform.system()
+            if sysname == "Linux":
+                p.write_text(
+                    "[Desktop Entry]\n"
+                    "Type=Application\nName=UniConvert\nExec=uniconvert\n"
+                    "Terminal=false\nX-GNOME-Autostart-enabled=true\n",
+                    encoding="utf-8")
+            elif sysname == "Darwin":
+                p.write_text(
+                    '<?xml version="1.0" encoding="UTF-8"?>\n'
+                    '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"\n'
+                    ' "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n'
+                    '<plist version="1.0"><dict><key>Label</key><string>app.uniconvert.UniConvert</string>'
+                    '<key>ProgramArguments</key><array><string>uniconvert</string></array>'
+                    '<key>RunAtLoad</key><true/></dict></plist>\n', encoding="utf-8")
+            else:
+                # Windows: write a .bat in Startup since .lnk creation requires COM
+                p = p.with_suffix(".bat")
+                p.write_text("@echo off\nstart \"\" \"%LOCALAPPDATA%\\Programs\\UniConvert\\UniConvert.exe\"\n",
+                             encoding="utf-8")
+        else:
+            try:
+                p.unlink(missing_ok=True)
+                if platform.system() == "Windows":
+                    p.with_suffix(".bat").unlink(missing_ok=True)
+            except OSError:
+                pass
 
     # ---------- UI construction ----------
     def _build_ui(self) -> None:
