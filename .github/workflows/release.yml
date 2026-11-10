@@ -1,0 +1,81 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install deps
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+          pip install -q pyinstaller PyQt6 Pillow pandas openpyxl PyYAML pytest
+      - name: Test
+        run: pytest -q tests/
+      - name: Build Linux binary
+        run: pyinstaller --noconfirm --name uniconvert_linux --add-data "assets:assets" main.py
+      - name: Build .deb
+        run: bash installers/linux/build_deb.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-artifacts
+          path: dist/release/*
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install deps
+        run: pip install -q pyinstaller PyQt6 Pillow pandas openpyxl PyYAML pytest
+      - name: Test
+        run: pytest -q tests/
+      - name: Build exe + installer
+        run: powershell -ExecutionPolicy Bypass -File installers/windows/build_exe.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-artifacts
+          path: dist/release/*
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install deps
+        run: pip install -q pyinstaller PyQt6 Pillow pandas openpyxl PyYAML pytest
+      - name: Test
+        run: pytest -q tests/
+      - name: Build dmg
+        run: bash installers/macos/build_dmg.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-artifacts
+          path: dist/release/*
+
+  release:
+    needs: [build-linux, build-windows, build-macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { path: artifacts, merge-multiple: true }
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: artifacts/*
