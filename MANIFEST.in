@@ -1,0 +1,6 @@
+include README.md LICENSE
+recursive-include assets *
+recursive-include installers *
+recursive-exclude dist *
+recursive-exclude __pycache__ *
+global-exclude *.pyc *.pyo

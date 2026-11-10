@@ -1,0 +1,20 @@
+; Windows 10/11 right-click context menu for UniConvert.
+; Install alongside UniConvert.exe — the path below assumes
+; UniConvert.exe is installed to %LOCALAPPDATA%\Programs\UniConvert\
+; Adjust paths if you install elsewhere, then double-click to merge.
+
+Windows Registry Editor Version 5.00
+
+[HKEY_CURRENT_USER\Software\Classes\*\shell\UniConvert]
+@="Convert with UniConvert..."
+"Icon"="%LOCALAPPDATA%\\Programs\\UniConvert\\uniconvert.exe,0"
+
+[HKEY_CURRENT_USER\Software\Classes\*\shell\UniConvert\command]
+@="\"%LOCALAPPDATA%\\Programs\\UniConvert\\uniconvert.exe\" \"%1\""
+
+[HKEY_CURRENT_USER\Software\Classes\Directory\shell\UniConvert]
+@="Convert with UniConvert (folder)..."
+"Icon"="%LOCALAPPDATA%\\Programs\\UniConvert\\uniconvert.exe,0"
+
+[HKEY_CURRENT_USER\Software\Classes\Directory\shell\UniConvert\command]
+@="\"%LOCALAPPDATA%\\Programs\\UniConvert\\uniconvert.exe\" \"%1\""
