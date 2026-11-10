@@ -195,8 +195,13 @@ class MainWindow(QMainWindow):
         self.progress.setValue(0)
         root.addWidget(self.progress)
 
-        self.status = self.setStatusBar(QStatusBar())
-        self.status.showMessage("Ready. Drop files to begin.")
+        self._status_bar = QStatusBar()
+        self.setStatusBar(self._status_bar)
+        self._status_bar.showMessage("Ready. Drop files to begin.")
+
+    @property
+    def status(self):
+        return self._status_bar
 
         self._on_category_changed(0)
 

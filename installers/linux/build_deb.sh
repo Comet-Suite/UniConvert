@@ -13,14 +13,13 @@ mkdir -p "$ROOT/DEBIAN" "$ROOT/usr/bin" "$ROOT/opt/uniconvert" \
          "$ROOT/usr/share/nautilus-python/extensions"
 
 # Bundle the PyInstaller-built executable + assets
-cp -r dist/uniconvert_linux/* "$ROOT/opt/uniconvert/" 2>/dev/null || {
+if [[ ! -x dist/uniconvert_linux/uniconvert_linux ]]; then
   echo "Building Linux one-folder bundle with PyInstaller first..."
-  pyinstaller --noconfirm --name uniconvert_linux --windowed \
+  pyinstaller --noconfirm --name uniconvert_linux \
     --add-data "assets:assets" \
-    --icon assets/logo.png \
-    uniconvert/__main__.py
-  mkdir -p dist/uniconvert_linux && cp -r dist/uniconvert_linux/* "$ROOT/opt/uniconvert/"
-}
+    main.py
+fi
+cp -r dist/uniconvert_linux/. "$ROOT/opt/uniconvert/"
 
 # Wrapper script
 cat > "$ROOT/usr/bin/uniconvert" <<'EOF'
